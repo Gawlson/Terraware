@@ -4,38 +4,31 @@ import { useState } from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { geoAlbersUsa, geoPath, geoCentroid } from "d3-geo";
 import { useRef } from "react";
+import { TClimateData, TAirQualityData } from "../types";
 // ─── Palette ──────────────────────────────────────────────────────────────────
 // darkGreen:  #386641
 // midGreen:   #6A994E
 // lime:       #A7C957
 // ivory:      #F2E8CF  ← primary background
 // red:        #BC4749  ← alerts / bad AQI
+//f77f00
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-export interface ClimateData {
-  aqi?: number;
-  category?: string;
-  pollutant?: string;
-  // expand as you add APIs
-}
+
 
 interface ClickedPoint {
   lat: number;
   lng: number;
   label: string;
-  data: ClimateData | null;
+  data: TClimateData | null;
   loading: boolean;
   error: string | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-async function fetchClimateData(lat: number, lng: number): Promise<ClimateData> {
-  const res = await fetch(`/api/aqi?lat=${lat}&lng=${lng}`);
-  if (!res.ok) throw new Error("Could not fetch data for this location.");
-  return res.json();
-}
+
 
 function aqiColor(aqi?: number): string {
   if (!aqi) return "#6A994E";
@@ -138,9 +131,12 @@ function SidePanel({ point }: { point: ClickedPoint | null }) {
         <div className="flex flex-col gap-3">
           <DataCard
             label="Air Quality Index"
-            value={point.data.aqi ?? "—"}
-            sub={aqiLabel(point.data.aqi)}
-            accent={aqiColor(point.data.aqi)}
+            value={point.data.airqualitydata?.aqi ?? "—"}
+            sub={`${aqiLabel(point.data.airqualitydata?.aqi)} ${point.data.airqualitydata?.dateObserved
+                ? `(Observed: ${point.data.airqualitydata.dateObserved.trim()})`
+                : "Sorry! No data available"
+              }`}
+            accent={aqiColor(point.data.airqualitydata?.aqi)}
           />
           {/* TODO: add more cards as you wire APIs */}
           {/* <DataCard label="Drought Level" value={} sub={} accent="#f59e0b" /> */}
@@ -168,12 +164,42 @@ function SidePanel({ point }: { point: ClickedPoint | null }) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function ClimateMap() {
+type ClimateProps = {
+  fetchdata: (latitudenum: number, longitudenum: number) => Promise<TClimateData>
+}
+export default function ClimateMap({ fetchdata }: ClimateProps) {
   const [point, setPoint] = useState<ClickedPoint | null>(null);
+  const [showPoint, setShowPoint] = useState(true)
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
-
+  const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState('explore')
+  const [fireStates, setFireStates] =  useState<string[]>([]);
+  const [displayFire, setDisplayFire] = useState(false);
+  const handleSetMode =(m :any) =>{
+    setMode(m);
+    if(m === "explore"){
+      setDisplayFire(false)
+      setShowPoint(true);
+    }
+    else if(m==='fire'){
+      setDisplayFire(true)
+      setShowPoint(false);
+    }
+  }
   async function handleStateClick(geo: any, e: React.MouseEvent) {
+
+    if (mode === "fire") {
+  setFireStates((prev) =>
+    prev.includes(geo.properties.name)
+      ? prev.filter((s) => s !== geo.properties.name) // deselect
+      : [...prev, geo.properties.name]     
+                 // select
+  );
+  
+} else {
+  // your existing explore logic
+
     const name = geo.properties.name;
 
     // To get the exact clicked coordinates regardless of screen size/stretching:
@@ -193,22 +219,25 @@ export default function ClimateMap() {
     if (!coords) return; // safety catch if clicking perfectly on an edge
 
     const [realLng, realLat] = coords;
-    
+
     setLatitude(realLat);
     setLongitude(realLng);
 
+    // 1. First, set loading to true and data to null so the UI updates to show a spinner immediately
     setPoint({ label: name, lat: realLat, lng: realLng, data: null, loading: true, error: null });
 
     try {
-      const data = await fetchClimateData(realLat, realLng);
+      // 2. Call the passed-in "fetchdata" function with the coordinates and await the result
+      const data = await fetchdata(realLat, realLng);
       setPoint((prev) => prev && { ...prev, data, loading: false });
     } catch (e: any) {
       setPoint((prev) => prev && { ...prev, loading: false, error: e.message });
     }
   }
-const mapRef = useRef<HTMLDivElement>(null);
-// We match react-simple-maps' exact internal defaults for the "geoAlbersUsa" projection:
-const projection = geoAlbersUsa().scale(1070).translate([400, 300]);
+  }
+  const mapRef = useRef<HTMLDivElement>(null);
+  // We match react-simple-maps' exact internal defaults for the "geoAlbersUsa" projection:
+  const projection = geoAlbersUsa().scale(1070).translate([400, 300]);
 
   return (
     <div
@@ -217,19 +246,36 @@ const projection = geoAlbersUsa().scale(1070).translate([400, 300]);
     >
       {/* Header */}
       <header
-        className="flex items-center justify-between px-8 py-4 border-b"
-        style={{ background: "#F2E8CF", borderColor: "#A7C957" }}
+        className="flex items-center justify-between px-8 py-6 border-b"
+        style={{ background: "#F2E8CF", borderColor: "#A7C957", paddingTop:"4px", paddingBottom: "4px" }}
       >
         <div className="flex items-center gap-3">
           <span className="text-2xl">🌎</span>
           <div>
             <h1 className="text-lg font-semibold leading-none" style={{ color: "#386641" }}>
-            placeholder
+              placeholder
             </h1>
             <p className="text-xs mt-0.5" style={{ color: "#6A994E" }}>
               placeholder
             </p>
           </div>
+          <div className="flex gap-2">
+  {(["explore", "fire"] as const).map((m) => (
+    <button
+      key={m}
+      onClick={() => handleSetMode(m)}
+      className="px-6 py-2 rounded-full text-sm font-medium transition-colors"
+      style={{
+        background: mode === m ? "#386641" : "transparent",
+        color: mode === m ? "#F2E8CF" : "#6A994E",
+        border: "1.5px solid #6A994E",
+        padding : "6px",
+      }}
+    >
+      {m === "explore" ? "🌿 Explore" : "🔥 Fire Mode"}
+    </button>
+  ))}
+</div>
         </div>
 
         {/* AQI Legend */}
@@ -253,52 +299,59 @@ const projection = geoAlbersUsa().scale(1070).translate([400, 300]);
         {/* Map */}
         <main className="flex-1 relative overflow-hidden">
           <div ref={mapRef} className="absolute inset-0">
-          <ComposableMap
-            projection="geoAlbersUsa"
-            style={{ width: "100%", height: "100%" }}
-          >
-            <Geographies geography={GEO_URL}>
-              {({ geographies }) =>
-                geographies.map((geo) => {
-                  const isSelected = point?.label === geo.properties.name;
-                  return (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      onClick={(e) => handleStateClick(geo, e)}
-                      style={{
-                        default: {
-                          fill: isSelected ? "#386641" : "#6A994E",
-                          stroke: "#F2E8CF",
-                          strokeWidth: 1.2,
-                          outline: "none",
-                        },
-                        hover: {
-                          fill: "#386641",
-                          stroke: "#F2E8CF",
-                          strokeWidth: 1.2,
-                          outline: "none",
-                          cursor: "pointer",
-                        },
-                        pressed: { fill: "#386641", outline: "none" },
-                      }}
-                    />
-                  );
-                })
-              }
-            </Geographies>
-            {point && projection([point.lng, point.lat]) &&  (
-             
-              <Marker coordinates={[point.lng, point.lat]}>
-                <circle r={6} fill="#BC4749" stroke="#F2E8CF" strokeWidth={2} />
-              </Marker>
-            )}
-          </ComposableMap>
+            <ComposableMap
+              projection="geoAlbersUsa"
+              style={{ width: "100%", height: "100%" }}
+            >
+              <Geographies geography={GEO_URL}>
+                {({ geographies }) =>
+                  geographies.map((geo) => {
+                    const isSelected = point?.label === geo.properties.name;
+                    const isFireState = fireStates.includes(geo.properties.name)
+                    return (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        onClick={(e) => handleStateClick(geo, e)}
+                        style={{
+                          default: {
+                            fill: ((isSelected && showPoint) || (isFireState && displayFire)) ? "#386641" : "#6A994E",
+                            stroke: "#F2E8CF",
+                            strokeWidth: 1.2,
+                            outline: "none",
+                          },
+                          hover: {
+                            fill: "#386641",
+                            stroke: "#F2E8CF",
+                            strokeWidth: 1.2,
+                            outline: "none",
+                            cursor: "pointer",
+                          },
+                          pressed: { fill: "#386641", outline: "none" },
+                        }}
+                      />
+                    );
+                  })
+                }
+              </Geographies>
+              {point && showPoint && projection([point.lng, point.lat]) && (
+
+                <Marker coordinates={[point.lng, point.lat]}>
+                  <circle r={6} fill="#BC4749" stroke="#F2E8CF" strokeWidth={2} />
+                </Marker>
+              )}
+            </ComposableMap>
           </div>
+          {fireStates.map(state => {
+            return (
+              <p className ="text-red-950" key = {state} >{state}</p>
+            )
+          })} 
+          <p className = "text-red-500">hello world</p>
         </main>
 
         <div className="w-px" style={{ background: "#A7C957", opacity: 0.5 }} />
-
+              
         <SidePanel point={point} />
       </div>
     </div>

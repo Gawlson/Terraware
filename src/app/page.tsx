@@ -1,26 +1,28 @@
-'use client'
-import { useState, useRef, useMemo } from "react";
-import Globe from "../components/Globe";
+'use server'
+// import { useState, useRef, useMemo } from "react";
+
 import ClimateMap from "../components/Map";
-import SidePanel from "../components/SidePanel";
-import Toolbar from "../components/Toolbar";
-import { CLIMATE_EVENTS } from "../data/events";
+import { fetchClimateData } from "./actions";
+ import { CLIMATE_EVENTS } from "../data/events";
 import { ClimateEvent, EventType } from "../types";
 
-export default function App() {
-  const [selectedEvent, setSelectedEvent] = useState<ClimateEvent | null>(null);
-  const [activeFilter, setActiveFilter] = useState<EventType | "all">("all");
+export default async function Page() {
+  // const [selectedEvent, setSelectedEvent] = useState<ClimateEvent | null>(null);
+  // const [activeFilter, setActiveFilter] = useState<EventType | "all">("all");
 
 
-  const filteredEvents = useMemo(() =>
-    activeFilter === "all"
-      ? CLIMATE_EVENTS
-      : CLIMATE_EVENTS.filter(e => e.type === activeFilter),
-    [activeFilter]
-  );
+  // const filteredEvents = useMemo(() =>
+  //   activeFilter === "all"
+  //     ? CLIMATE_EVENTS
+  //     : CLIMATE_EVENTS.filter(e => e.type === activeFilter),
+  //   [activeFilter]
+  // );
 
 
-
+const  fetchClimateData_prop = async (latitude:number, longitude: number) => {
+  'use server'
+return await fetchClimateData(latitude,longitude)
+}
   return (
     <div style={{
       width: "100vw",
@@ -42,7 +44,7 @@ export default function App() {
       <div style={{ flex: 1, display: "flex", position: "relative", overflow: "hidden" }}>
         <div style={{ flex: 1, position: "relative" }}>
   
-          <ClimateMap />
+          <ClimateMap  fetchdata={fetchClimateData_prop}/>
 
   
          
