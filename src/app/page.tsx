@@ -1,68 +1,84 @@
-'use server'
-import Image from "next/image";
-import { AirQuality } from "../api/AirQuality";
+'use client'
+import { useState, useRef, useMemo } from "react";
+import Globe from "../components/Globe";
+import SidePanel from "../components/SidePanel";
+import Toolbar from "../components/Toolbar";
+import { CLIMATE_EVENTS } from "../data/events";
+import { ClimateEvent, EventType } from "../types";
 
-export default async  function Home() {
+export default function App() {
+  const [selectedEvent, setSelectedEvent] = useState<ClimateEvent | null>(null);
+  const [activeFilter, setActiveFilter] = useState<EventType | "all">("all");
+  const [isSpinning, setIsSpinning] = useState(true);
+  const flyToRef = useRef<((lat: number, lng: number) => void) | null>(null);
+
+  const filteredEvents = useMemo(() =>
+    activeFilter === "all"
+      ? CLIMATE_EVENTS
+      : CLIMATE_EVENTS.filter(e => e.type === activeFilter),
+    [activeFilter]
+  );
+
+  const handleEventClick = (event: ClimateEvent) => {
+    setSelectedEvent(event);
+    flyToRef.current?.(event.lat, event.lng);
+  };
+
+  const handleReset = () => {
+    setSelectedEvent(null);
+    flyToRef.current?.(39.5, -98.35);
+  };
 
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-hello pal  {randata}        </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <div style={{
+      width: "100vw",
+      height: "100vh",
+      background: "#030810",
+      display: "flex",
+      flexDirection: "column",
+      fontFamily: "'DM Sans', sans-serif",
+      overflow: "hidden",
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+      `}</style>
 
+      <div style={{ flex: 1, display: "flex", position: "relative", overflow: "hidden" }}>
+        <div style={{ flex: 1, position: "relative" }}>
+          <Globe
+            events={filteredEvents}
+            onEventClick={handleEventClick}
+            flyToRef={flyToRef}
+            isSpinning={isSpinning}
+          />
+          <Toolbar
+            activeFilter={activeFilter}
+            onFilterChange={setActiveFilter}
+            isSpinning={isSpinning}
+            onToggleSpin={() => setIsSpinning(p => !p)}
+            onReset={handleReset}
+          />
+          <div style={{
+            position: "absolute", bottom: 16, left: 16,
+            fontSize: 9, fontFamily: "monospace",
+            color: "rgba(255,255,255,0.2)", letterSpacing: "0.1em", lineHeight: 1.8,
+          }}>
+            DRAG TO ROTATE · SCROLL TO ZOOM<br />
+            CLICK MARKER TO INSPECT
+          </div>
+        </div>
+
+        <SidePanel
+          events={filteredEvents}
+          selectedEvent={selectedEvent}
+          onSelectEvent={handleEventClick}
+          onClearSelection={() => setSelectedEvent(null)}
+        />
+      </div>
+    </div>
   );
 }
