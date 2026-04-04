@@ -12,3 +12,18 @@ export interface ClimateEvent {
   desc: string;
   stats: [string, string][];
 }
+export interface TClimateData {
+  aqi?: number;
+  category?: string;
+  pollutant?: string;
+  airqualitydata? : TAirQualityData
+  // add more
+}
+export interface TAirQualityData {
+   
+    dateObserved:string,
+     aqi:number,
+     categoryNumber:number,
+    categoryName: string
+  
+}
