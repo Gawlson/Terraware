@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef, useMemo } from "react";
 import Globe from "../components/Globe";
+import ClimateMap from "../components/Map";
 import SidePanel from "../components/SidePanel";
 import Toolbar from "../components/Toolbar";
 import { CLIMATE_EVENTS } from "../data/events";
@@ -9,8 +10,7 @@ import { ClimateEvent, EventType } from "../types";
 export default function App() {
   const [selectedEvent, setSelectedEvent] = useState<ClimateEvent | null>(null);
   const [activeFilter, setActiveFilter] = useState<EventType | "all">("all");
-  const [isSpinning, setIsSpinning] = useState(true);
-  const flyToRef = useRef<((lat: number, lng: number) => void) | null>(null);
+
 
   const filteredEvents = useMemo(() =>
     activeFilter === "all"
@@ -19,15 +19,7 @@ export default function App() {
     [activeFilter]
   );
 
-  const handleEventClick = (event: ClimateEvent) => {
-    setSelectedEvent(event);
-    flyToRef.current?.(event.lat, event.lng);
-  };
 
-  const handleReset = () => {
-    setSelectedEvent(null);
-    flyToRef.current?.(39.5, -98.35);
-  };
 
   return (
     <div style={{
@@ -49,35 +41,14 @@ export default function App() {
 
       <div style={{ flex: 1, display: "flex", position: "relative", overflow: "hidden" }}>
         <div style={{ flex: 1, position: "relative" }}>
-          <Globe
-            events={filteredEvents}
-            onEventClick={handleEventClick}
-            flyToRef={flyToRef}
-            isSpinning={isSpinning}
-          />
-          <Toolbar
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-            isSpinning={isSpinning}
-            onToggleSpin={() => setIsSpinning(p => !p)}
-            onReset={handleReset}
-          />
-          <div style={{
-            position: "absolute", bottom: 16, left: 16,
-            fontSize: 9, fontFamily: "monospace",
-            color: "rgba(255,255,255,0.2)", letterSpacing: "0.1em", lineHeight: 1.8,
-          }}>
-            DRAG TO ROTATE · SCROLL TO ZOOM<br />
-            CLICK MARKER TO INSPECT
-          </div>
+  
+          <ClimateMap />
+
+  
+         
         </div>
 
-        <SidePanel
-          events={filteredEvents}
-          selectedEvent={selectedEvent}
-          onSelectEvent={handleEventClick}
-          onClearSelection={() => setSelectedEvent(null)}
-        />
+    
       </div>
     </div>
   );
