@@ -9,7 +9,7 @@ const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/VIIRS_NOAA
 const res = await fetch(url);
  const csv = await res.text();
   cachedFires = parse(csv, { columns: true, skip_empty_lines: true });
-  console.log(cachedFires);
+  //console.log(cachedFires);
   return cachedFires
 
 }
