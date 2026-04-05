@@ -82,7 +82,7 @@ export async function DroughtData(stateName : string) {
       console.log('droiught cache hit')
       return cachedata
     }
-const url = `https://usdmdataservices.unl.edu/api/StateStatistics/GetDroughtSeverityStatisticsByArea?aoi=${stateFIPS}&startdate=3/1/2026&enddate=4/1/2026&statisticsType=1`;
+const url = `https://usdmdataservices.unl.edu/api/StateStatistics/GetDroughtSeverityStatisticsByArea?aoi=${stateFIPS}&startdate=1/1/2026&enddate=4/1/2026&statisticsType=1`;
     const response = await fetch(url, {
         headers: {
             "Accept": "application/json"
@@ -94,10 +94,12 @@ const url = `https://usdmdataservices.unl.edu/api/StateStatistics/GetDroughtSeve
   }
 
   const data = await response.json();
+  console.log(stateName)
   //console.log("water")
-
+//console.log(data)
   const avgDroughtLevel = computeMonthlyAverage(data)
   const severity = await droughtLabel(avgDroughtLevel)
+  console.log(avgDroughtLevel)
   cachedDroughtData.set(stateName,
    { avgDroughtLevel, severity}
   )
