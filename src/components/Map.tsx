@@ -22,6 +22,41 @@ import { DroughtData } from "../api/DroughtData";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
+type PopulationCenter = {
+  name: string;
+  coordinates: [number, number];
+};
+
+const HIGH_POPULATION_CENTERS: PopulationCenter[] = [
+  { name: "New York", coordinates: [-73.9352, 40.7306] },
+  { name: "Los Angeles", coordinates: [-118.2437, 34.0622] },
+  { name: "Chicago", coordinates: [-87.6298, 41.8781] },
+  { name: "Houston", coordinates: [-95.3698, 29.7604] },
+  { name: "Phoenix", coordinates: [-112.074, 33.4484] },
+  { name: "Philadelphia", coordinates: [-75.1652, 39.9726] },
+  { name: "San Antonio", coordinates: [-98.4936, 29.4241] },
+  { name: "San Diego", coordinates: [-117.1311, 32.7357] },
+  { name: "Dallas", coordinates: [-96.797, 32.7767] },
+  { name: "San Jose", coordinates: [-121.8763, 37.3382] },
+  { name: "Austin", coordinates: [-97.7431, 30.2672] },
+  { name: "Jacksonville", coordinates: [-81.6557, 30.3522] },
+  { name: "Fort Worth", coordinates: [-97.3308, 32.7555] },
+  { name: "Columbus", coordinates: [-82.9988, 39.9612] },
+  { name: "Charlotte", coordinates: [-80.8431, 35.2271] },
+  { name: "Indianapolis", coordinates: [-86.1581, 39.7684] },
+  { name: "Seattle", coordinates: [-122.3021, 47.6162] },
+  { name: "Denver", coordinates: [-104.9903, 39.7392] },
+  { name: "Boston", coordinates: [-71.0789, 42.3601] },
+  { name: "Washington DC", coordinates: [-77.0369, 38.9072] },
+  { name: "Nashville", coordinates: [-86.7816, 36.1627] },
+  { name: "Detroit", coordinates: [-83.0458, 42.3314] },
+  { name: "Las Vegas", coordinates: [-115.1398, 36.1699] },
+  { name: "Portland", coordinates: [-122.6665, 45.5331] },
+  { name: "Miami", coordinates: [-80.2218, 25.7817] },
+  { name: "Atlanta", coordinates: [-84.388, 33.749] },
+  { name: "Orlando", coordinates: [-81.3792, 28.5383] },
+];
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 
@@ -72,10 +107,12 @@ const [stateDroughtData, setStateDroughtData] = useState<{
 } | null>(null);
 
 const[displayAIModal, setDisplayAIModal] = useState(false)
+const [isHydrated, setIsHydrated] = useState(false);
 const handleOnCloseModal = () =>{
   setDisplayAIModal(false)
 }
 useEffect(() => {
+  setIsHydrated(true);
   fetchFireData().then(setAllFires);
   
 }, []);
@@ -261,6 +298,12 @@ useEffect(() => {
         {/* Map */}
         <main className="flex-1 relative overflow-hidden">
           <div ref={mapRef} className="absolute inset-0">
+            {!isHydrated ? (
+              <div
+                className="w-full h-full"
+                style={{ background: "#F2E8CF" }}
+              />
+            ) : (
             <ComposableMap
               projection="geoAlbersUsa"
               style={{ width: "100%", height: "100%" }}
@@ -314,7 +357,21 @@ useEffect(() => {
                   <circle r={6} fill="#BC4749" stroke="#F2E8CF" strokeWidth={2} />
                 </Marker>
               )}
+              {HIGH_POPULATION_CENTERS.map((center) => (
+                <Marker key={center.name} coordinates={center.coordinates}>
+                  <title>{center.name}</title>
+                  <circle
+                    r={2}
+                    fill="#111111"
+                    fillOpacity={0.95}
+                    stroke="#F2E8CF"
+                    strokeWidth={0.4}
+                    pointerEvents="none"
+                  />
+                </Marker>
+              ))}
             </ComposableMap>
+            )}
           </div>
          
          
