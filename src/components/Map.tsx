@@ -8,6 +8,8 @@ import { TClimateData, TAirQualityData, TFireEventData } from "../types";
 import { fetchFireData } from "../app/actions";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { point as turfpoint } from "@turf/helpers";
+import SidePanel from "./SidePanel";
+import { getEndangeredSpecies } from "../api/EndangeredSpecies";
 // ─── Palette ──────────────────────────────────────────────────────────────────
 // darkGreen:  #386641
 // midGreen:   #6A994E
@@ -33,204 +35,7 @@ interface ClickedPoint {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 
-function aqiColor(aqi?: number): string {
-  if (!aqi) return "#6A994E";
-  if (aqi <= 50) return "#6A994E";
-  if (aqi <= 100) return "#A7C957";
-  if (aqi <= 150) return "#f59e0b";
-  if (aqi <= 200) return "#f97316";
-  return "#BC4749";
-}
 
-function aqiLabel(aqi?: number): string {
-  if (!aqi) return "—";
-  if (aqi <= 50) return "Good";
-  if (aqi <= 100) return "Moderate";
-  if (aqi <= 150) return "Unhealthy for sensitive groups";
-  if (aqi <= 200) return "Unhealthy";
-  return "Hazardous";
-}
-
-// ─── DataCard ─────────────────────────────────────────────────────────────────
-function DataCard({
-  label,
-  value,
-  sub,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  sub?: string;
-  accent: string;
-}) {
-  return (
-    <div
-      className="rounded-xl flex flex-col gap-1 bg-white shadow-sm"
-      style={{ 
-        borderLeft: `4px solid ${accent}`,
-        padding: "24px 28px" 
-      }}
-    >
-      <p className="text-xs uppercase tracking-widest" style={{ color: "#6A994E" }}>
-        {label}
-      </p>
-      <p className="text-3xl font-semibold" style={{ color: "#386641" }}>
-        {value}
-      </p>
-      {sub && (
-        <p className="text-sm" style={{ color: "#6A994E" }}>
-          {sub}
-        </p>
-      )}
-    </div>
-  );
-}
-
-// ─── SidePanel ────────────────────────────────────────────────────────────────
-function SidePanel({ point, mode, firesinstate, Bfirestateselected ,selectedstates }: { point: ClickedPoint | null, mode: string, firesinstate: TFireEventData[], Bfirestateselected: boolean, selectedstates : {stateName:string, statefires : TFireEventData[]}[] }) {
-  if (!point && mode === 'explore') {
-    return (
-      <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#A7C957" }}>
-          🌿
-        </div>
-        <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
-          Click a state to explore real-time climate data for that region.
-        </p>
-      </aside>
-    );
-  }
-
-  if (mode === 'fire' && !Bfirestateselected) {
-    return (
-      <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#BC4749" }}>
-          🔥
-        </div>
-        <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
-          Select states to view real-time wildfire data.
-        </p>
-      </aside>
-    );
-  }
-
-  if (!point && mode !== 'fire') {
-    return (
-      <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#A7C957" }}>
-          🌿
-        </div>
-        <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
-          Click a state to explore real-time climate data for that region.
-        </p>
-      </aside>
-    );
-  }
-  let totalselectedfires = 0;
- for (let i = 0; i< selectedstates.length; i++ ){
-    totalselectedfires += selectedstates[i].statefires.length
- }
-  return (
-    <aside className="w-80 flex flex-col gap-5 p-6 overflow-y-auto">
-      <div>
-        <h2 className="text-xl font-semibold" style={{ color: "#386641" }}>
-          {mode === 'fire' ? 'Wildfire Data' : point?.label}
-        </h2>
-        <p className="text-xs mt-1 font-mono" style={{ color: "#6A994E" }}>
-          {mode === 'fire' ? `${totalselectedfires} fires detected` : `${point?.lat.toFixed(4)}°N · ${Math.abs(point?.lng ?? 0).toFixed(4)}°W`}
-        </p>
-      </div>
-
-      <div className="h-px" style={{ background: "#A7C957", opacity: 0.4 }} />
-
-      {mode === 'fire' ? (
-     
-     
-      <div className="flex flex-col items-center w-full">
-        <div className="flex flex-col gap-8 w-full max-w-[280px]">
-             {selectedstates?.map((state, index) => {
-  return (  
-    <div key={state.stateName} className="flex flex-col gap-8 w-full">
-    <div 
-      className="flex flex-col w-full gap-3 rounded-2xl shadow-md border-2"
-      style={{ 
-        backgroundColor: "#EDF5E0", 
-        borderColor: "#A7C957",
-        padding: "16px 24px" 
-      }}
-    >   
-          <h3 className="text-sm font-bold uppercase tracking-wider px-1" style={{ color: "#386641" }}>
-            {state.stateName}
-          </h3>
-          <DataCard
-            label="Total Active Fires"
-            value={state.statefires.length}
-            sub="Detected in last 24hrs"
-            accent="#BC4749"
-          />
-          <DataCard
-            label="High Confidence"
-            value={state.statefires.filter(f => f.confidence === "h").length}
-            sub="High confidence detections"
-            accent="#BC4749"
-          />
-          <DataCard
-            label="Daytime Fires"
-            value={state.statefires.filter(f => f.daynight === "D").length}
-            sub="Detected during daylight"
-            accent="#f59e0b"
-          />
-    </div>
-    {index < selectedstates.length - 1 && (
-      <div className="h-px w-full" style={{ background: "#A7C957", opacity: 0.4 }} />
-    )}
-    </div>
-  );
-})}
-        </div>
-      </div>
-
-      ) : (
-        <>
-          {point?.loading && (
-            <div className="flex items-center gap-2" style={{ color: "#6A994E" }}>
-              <div className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
-              <span className="text-sm">Fetching data…</span>
-            </div>
-          )}
-
-          {point?.error && (
-            <p className="text-sm rounded-lg p-3" style={{ background: "#fef2f2", color: "#BC4749" }}>
-              {point.error}
-            </p>
-          )}
-
-          {point?.data && !point.loading && (
-            <div className="flex flex-col gap-3">
-              <DataCard
-                label="Air Quality Index"
-                value={point.data.airqualitydata?.aqi ?? "—"}
-                sub={`${aqiLabel(point.data.airqualitydata?.aqi)} ${point.data.airqualitydata?.dateObserved
-                  ? `(Observed: ${point.data.airqualitydata.dateObserved.trim()})`
-                  : "Sorry! No data available"
-                }`}
-                accent={aqiColor(point.data.airqualitydata?.aqi)}
-              />
-            </div>
-          )}
-        </>
-      )}
-
-      <div className="h-px" style={{ background: "#A7C957", opacity: 0.4 }} />
-      <div className="rounded-xl p-4 text-sm leading-relaxed" style={{ background: "#EDF5E0", color: "#386641" }}>
-        <p className="font-medium mb-1">What you can do</p>
-        <p className="text-xs" style={{ color: "#6A994E" }}>
-          AI-generated local action suggestions will appear here.
-        </p>
-      </div>
-    </aside>
-  );
-}
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 type ClimateProps = {
@@ -241,7 +46,7 @@ export default function ClimateMap({ fetchdata }: ClimateProps) {
   // Stores the clicked location, fetched AQI data payload, and loading/error states for Explore mode
   const [point, setPoint] = useState<ClickedPoint | null>(null);
   // Controls whether the single red dot (explore mode marker) is rendered on the map
-  const [showPoint, setShowPoint] = useState(true)
+  const [displayExplore, setDisplayExplore] = useState(true)
   // Tracks multi-selected states in Fire mode, storing each state's name and its associated high-confidence fire data for the Side Panel
   const [fireStates, setFireStates] =  useState<{stateName :string, statefires :TFireEventData[]}[]>([]);
   // A visual toggle to keep Fire mode states highlighted/filled when they are selected
@@ -252,11 +57,12 @@ export default function ClimateMap({ fetchdata }: ClimateProps) {
   const [allFires, setAllFires] = useState<TFireEventData[]>([]);
   // Holds the calculated subset of fire events that geographically intersect with the selected states (used to plot individual fire dots)
   const[firesInState, setFiresInState] = useState<TFireEventData[]>([])
-
+const [speciesData, setSpeciesData] = useState<any[]>([])
+const [displayAnimalData, setDisplayAnimalData] = useState(false)
 useEffect(() => {
   fetchFireData().then(setAllFires);
 }, []);
-  console.log(allFires);
+ // console.log(allFires);
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
   const [loading, setLoading] = useState(false);
@@ -267,11 +73,18 @@ useEffect(() => {
     setMode(m);
     if(m === "explore"){
       setDisplayFire(false)
-      setShowPoint(true);
+      setDisplayExplore(true);
+      setDisplayAnimalData(false)
     }
     else if(m==='fire'){
       setDisplayFire(true)
-      setShowPoint(false);
+      setDisplayExplore(false);
+      setDisplayAnimalData(false)
+    }
+    else if(m === 'wildlife'){
+          setDisplayFire(false)
+      setDisplayExplore(false);
+      setDisplayAnimalData(true )
     }
   }
   async function handleStateClick(geo: any, e: React.MouseEvent) {
@@ -336,6 +149,8 @@ useEffect(() => {
     } catch (e: any) {
       setPoint((prev) => prev && { ...prev, loading: false, error: e.message });
     }
+    const species =  await getEndangeredSpecies(name);
+    setSpeciesData(species)
   }
   }
   const mapRef = useRef<HTMLDivElement>(null);
@@ -363,7 +178,7 @@ useEffect(() => {
             </p>
           </div>
           <div className="flex gap-2">
-  {(["explore", "fire"] as const).map((m) => (
+  {(["explore", "fire","wildlife"] as const).map((m) => (
     <button
       key={m}
       onClick={() => handleSetMode(m)}
@@ -375,7 +190,7 @@ useEffect(() => {
         padding : "6px",
       }}
     >
-      {m === "explore" ? "Explore" : "View Wildfires"}
+      {m === "explore" ? "Explore" : m === "fire" ? "View Wildfires" : "Endangered Species"}
     </button>
   ))}
 </div>
@@ -418,7 +233,7 @@ useEffect(() => {
                         onClick={(e) => handleStateClick(geo, e)}
                         style={{
                           default: {
-                            fill: ((isSelected && showPoint) || (isFireState && displayFire)) ? "#386641" : "#6A994E",
+                            fill: ((isSelected && (displayExplore||displayAnimalData)) || (isFireState && displayFire)) ? "#386641" : "#6A994E",
                             stroke: "#F2E8CF",
                             strokeWidth: 1.2,
                             outline: "none",
@@ -449,7 +264,7 @@ useEffect(() => {
 
 
   ))}
-              {point && showPoint && projection([point.lng, point.lat]) && (
+              {point && (displayExplore||displayAnimalData) && projection([point.lng, point.lat]) && (
 
                 <Marker coordinates={[point.lng, point.lat]}>
                   <circle r={6} fill="#BC4749" stroke="#F2E8CF" strokeWidth={2} />
@@ -463,8 +278,206 @@ useEffect(() => {
 
         <div className="w-px" style={{ background: "#A7C957", opacity: 0.5 }} />
               
-        <SidePanel point={point} mode = {mode} firesinstate = {firesInState} Bfirestateselected = {fireStates.length>0} selectedstates = {fireStates} />
+        <SidePanel point={point} mode = {mode} firesinstate = {firesInState} Bfirestateselected = {fireStates.length>0} selectedstates = {fireStates} speciesdata = {speciesData} />
       </div>
     </div>
   );
 }
+// function aqiColor(aqi?: number): string {
+//   if (!aqi) return "#6A994E";
+//   if (aqi <= 50) return "#6A994E";
+//   if (aqi <= 100) return "#A7C957";
+//   if (aqi <= 150) return "#f59e0b";
+//   if (aqi <= 200) return "#f97316";
+//   return "#BC4749";
+// }
+
+// function aqiLabel(aqi?: number): string {
+//   if (!aqi) return "—";
+//   if (aqi <= 50) return "Good";
+//   if (aqi <= 100) return "Moderate";
+//   if (aqi <= 150) return "Unhealthy for sensitive groups";
+//   if (aqi <= 200) return "Unhealthy";
+//   return "Hazardous";
+// }
+
+// ─── DataCard ─────────────────────────────────────────────────────────────────
+// function DataCard({
+//   label,
+//   value,
+//   sub,
+//   accent,
+// }: {
+//   label: string;
+//   value: string | number;
+//   sub?: string;
+//   accent: string;
+// }) {
+//   return (
+//     <div
+//       className="rounded-xl flex flex-col gap-1 bg-white shadow-sm"
+//       style={{ 
+//         borderLeft: `4px solid ${accent}`,
+//         padding: "24px 28px" 
+//       }}
+//     >
+//       <p className="text-xs uppercase tracking-widest" style={{ color: "#6A994E" }}>
+//         {label}
+//       </p>
+//       <p className="text-3xl font-semibold" style={{ color: "#386641" }}>
+//         {value}
+//       </p>
+//       {sub && (
+//         <p className="text-sm" style={{ color: "#6A994E" }}>
+//           {sub}
+//         </p>
+//       )}
+//     </div>
+//   );
+// }
+
+// ─── SidePanel ────────────────────────────────────────────────────────────────
+// function SidePanel({ point, mode, firesinstate, Bfirestateselected ,selectedstates }: { point: ClickedPoint | null, mode: string, firesinstate: TFireEventData[], Bfirestateselected: boolean, selectedstates : {stateName:string, statefires : TFireEventData[]}[] }) {
+//   if (!point && mode === 'explore') {
+//     return (
+//       <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
+//         <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#A7C957" }}>
+//           🌿
+//         </div>
+//         <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
+//           Click a state to explore real-time climate data for that region.
+//         </p>
+//       </aside>
+//     );
+//   }
+
+//   if (mode === 'fire' && !Bfirestateselected) {
+//     return (
+//       <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
+//         <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#BC4749" }}>
+//           🔥
+//         </div>
+//         <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
+//           Select states to view real-time wildfire data.
+//         </p>
+//       </aside>
+//     );
+//   }
+
+//   if (!point && mode !== 'fire') {
+//     return (
+//       <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
+//         <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#A7C957" }}>
+//           🌿
+//         </div>
+//         <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
+//           Click a state to explore real-time climate data for that region.
+//         </p>
+//       </aside>
+//     );
+//   }
+//   let totalselectedfires = 0;
+//  for (let i = 0; i< selectedstates.length; i++ ){
+//     totalselectedfires += selectedstates[i].statefires.length
+//  }
+//   return (
+//     <aside className="w-80 flex flex-col gap-5 p-6 overflow-y-auto">
+//       <div>
+//         <h2 className="text-xl font-semibold" style={{ color: "#386641" }}>
+//           {mode === 'fire' ? 'Wildfire Data' : point?.label}
+//         </h2>
+//         <p className="text-xs mt-1 font-mono" style={{ color: "#6A994E" }}>
+//           {mode === 'fire' ? `${totalselectedfires} fires detected` : `${point?.lat.toFixed(4)}°N · ${Math.abs(point?.lng ?? 0).toFixed(4)}°W`}
+//         </p>
+//       </div>
+
+//       <div className="h-px" style={{ background: "#A7C957", opacity: 0.4 }} />
+
+//       {mode === 'fire' ? (
+     
+     
+//       <div className="flex flex-col items-center w-full">
+//         <div className="flex flex-col gap-8 w-full max-w-[280px]">
+//              {selectedstates?.map((state, index) => {
+//   return (  
+//     <div key={state.stateName} className="flex flex-col gap-8 w-full">
+//     <div 
+//       className="flex flex-col w-full gap-3 rounded-2xl shadow-md border-2"
+//       style={{ 
+//         backgroundColor: "#EDF5E0", 
+//         borderColor: "#A7C957",
+//         padding: "16px 24px" 
+//       }}
+//     >   
+//           <h3 className="text-sm font-bold uppercase tracking-wider px-1" style={{ color: "#386641" }}>
+//             {state.stateName}
+//           </h3>
+//           <DataCard
+//             label="Total Active Fires"
+//             value={state.statefires.length}
+//             sub="Detected in last 24hrs"
+//             accent="#BC4749"
+//           />
+//           <DataCard
+//             label="High Confidence"
+//             value={state.statefires.filter(f => f.confidence === "h").length}
+//             sub="High confidence detections"
+//             accent="#BC4749"
+//           />
+//           <DataCard
+//             label="Daytime Fires"
+//             value={state.statefires.filter(f => f.daynight === "D").length}
+//             sub="Detected during daylight"
+//             accent="#f59e0b"
+//           />
+//     </div>
+//     {index < selectedstates.length - 1 && (
+//       <div className="h-px w-full" style={{ background: "#A7C957", opacity: 0.4 }} />
+//     )}
+//     </div>
+//   );
+// })}
+//         </div>
+//       </div>
+
+//       ) : (
+//         <>
+//           {point?.loading && (
+//             <div className="flex items-center gap-2" style={{ color: "#6A994E" }}>
+//               <div className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+//               <span className="text-sm">Fetching data…</span>
+//             </div>
+//           )}
+
+//           {point?.error && (
+//             <p className="text-sm rounded-lg p-3" style={{ background: "#fef2f2", color: "#BC4749" }}>
+//               {point.error}
+//             </p>
+//           )}
+
+//           {point?.data && !point.loading && (
+//             <div className="flex flex-col gap-3">
+//               <DataCard
+//                 label="Air Quality Index"
+//                 value={point.data.airqualitydata?.aqi ?? "—"}
+//                 sub={`${aqiLabel(point.data.airqualitydata?.aqi)} ${point.data.airqualitydata?.dateObserved
+//                   ? `(Observed: ${point.data.airqualitydata.dateObserved.trim()})`
+//                   : "Sorry! No data available"
+//                 }`}
+//                 accent={aqiColor(point.data.airqualitydata?.aqi)}
+//               />
+//             </div>
+//           )}
+//         </>
+//       )}
+
+//       <div className="h-px" style={{ background: "#A7C957", opacity: 0.4 }} />
+//       <div className="rounded-xl p-4 text-sm leading-relaxed" style={{ background: "#EDF5E0", color: "#386641" }}>
+//         <p className="font-medium mb-1">What you can do</p>
+//         <p className="text-xs" style={{ color: "#6A994E" }}>
+//           AI-generated local action suggestions will appear here.
+//         </p>
+//       </div>
+//     </aside>
+//   );
+// }
