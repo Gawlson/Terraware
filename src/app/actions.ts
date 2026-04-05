@@ -84,7 +84,8 @@ export async function generateActionPlan(data: {
     droughtDescription: data.droughtLevel !== null ? describeDrought(data.droughtLevel) : "No data",
     aqi: data.aqi,
     fires: data.fires,
-    animals : data.animals
+    animals : data.animals,
+    temperatureDelta : data.temperatureDelta
 
   };
 
@@ -102,7 +103,7 @@ Your task is to generate a JSON object with three sections:
 
 1. "summary": A concise, clear paragraph describing current environmental conditions for the state and the selected location, written for a general audience. Include how current temperatures compare to historical averages — note whether the area is warmer or cooler than usual and by how much. If AQI is 0, say that air quality data is not available at this location.
 
-2. "recommendations": A list of 2–4 actionable recommendations for average people living in the state or at the selected location, written in plain language. Only include advice relevant to the available data. If temperatures are significantly above or below normal, include relevant guidance.
+2. "recommendations": A list of 2–4 actionable recommendations written for someone living specifically at the selected location, not the state generally. Prioritize the most urgent condition first (e.g. if wildfires are active nearby, lead with that). Make advice concrete and specific — instead of "check air quality," say "if AQI rises above 100, wear an N95 mask outdoors and keep windows closed." Use the actual AQI number, fire count, and drought level in the advice where natural. Write like you're texting a friend who lives there, not filing a report.
 
 3. "endangeredSpeciesImpact": A list of 1–3 endangered species that occur in the state, and a brief description of how current drought, air quality (if available), wildfire conditions, and temperature deviation from normal might affect them. Explain how unusual warmth or cold specifically stresses each species — for example, effects on breeding cycles, habitat range, food availability, or migration. Do not include species that are unlikely to occur in the state.
 
@@ -111,9 +112,9 @@ Make the output strictly JSON with these keys only. Example:
 {
   "summary": "California is experiencing moderate drought conditions with temperatures running about 4°F above the historical average, AQI is moderate at the selected location, and a small number of active fires are present. The warmer-than-normal conditions are compounding stress on local ecosystems.",
   "recommendations": [
-    "Use water responsibly in your household and garden.",
+    "With 77 active wildfires in the state, check your local evacuation zone now at ready.ca.gov — don't wait for an alert.",
+    "Your AQI is currently 46 (Good), but if it climbs above 100, close your windows and wear an N95 outdoors.",
     "Avoid burning debris or using fire-prone equipment outdoors during dry periods.",
-    "Check local air quality reports before outdoor exercise.",
     "Limit strenuous outdoor activity during the hottest parts of the day, as temperatures are running above normal."
   ],
   "endangeredSpeciesImpact": [
@@ -127,7 +128,7 @@ Make the output strictly JSON with these keys only. Example:
 Here is the data for the state and location you need to summarize:
 Data: ${JSON.stringify(FormatedData, null, 2)}
 
-Use the provided state, drought, AQI, fire, and temperature difference data to fill this template. If AQI or drought data is 0, treat it as unavailable and note that in your summary. Write recommendations for people, not agencies or scientists.`,
+Use the provided state, location name, drought, AQI, fire, and temperature difference data to fill this template. If AQI or drought data is 0, treat it as unavailable and note that in your summary. Write recommendations for people, not agencies or scientists. Be specific — use the real numbers from the data, reference the actual location by name, and prioritize the most pressing risk.`,
   });
   return text;
 }
