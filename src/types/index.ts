@@ -16,7 +16,8 @@ export interface TClimateData {
   aqi?: number;
   category?: string;
   pollutant?: string;
-  airqualitydata? : TAirQualityData
+  airqualitydata? : TAirQualityData,
+  fireeventdata? : TFireEventData[]
   // add more
 }
 export interface TAirQualityData {
@@ -26,4 +27,14 @@ export interface TAirQualityData {
      categoryNumber:number,
     categoryName: string
   
+  
+}
+export interface TFireEventData {
+  latitude: string;
+  longitude: string;
+  acq_date: string;
+  acq_time: string;
+  satellite: string;
+  confidence: string;
+  daynight: string;
 }
