@@ -1,0 +1,459 @@
+{
+  "Alabama": [
+    "Whooping Crane",
+    "Red Wolf",
+    "Ocelot",
+    "Grizzly Bear",
+    "Jaguar",
+    "West Indian Manatee",
+    "Loggerhead Sea Turtle",
+    "Green Sea Turtle",
+    "Atlantic Sturgeon",
+    "Piping Plover",
+    "Steelhead Trout",
+    "Bald Eagle",
+    "Loggerhead Shrike",
+    "Least Tern",
+    "Louisiana Pearlshell",
+    "Ivory-billed Woodpecker"
+  ],
+  "Alaska": [
+    "Grizzly Bear",
+    "Green Sea Turtle",
+    "Chinook Salmon",
+    "Least Tern",
+    "Robbins Milkvetch"
+  ],
+  "Arizona": [
+    "Black-footed Ferret",
+    "Florida Panther",
+    "Grizzly Bear",
+    "Devils Hole Pupfish",
+    "Loggerhead Shrike",
+    "Black-capped Vireo"
+  ],
+  "Arkansas": [
+    "Grizzly Bear",
+    "Lake Sturgeon",
+    "Red-cockaded Woodpecker",
+    "Eastern Prairie Fringed Orchid",
+    "Ivory-billed Woodpecker"
+  ],
+  "California": [
+    "California Condor",
+    "Whooping Crane",
+    "Ocelot",
+    "Grizzly Bear",
+    "West Indian Manatee",
+    "Leatherback Sea Turtle",
+    "Chinook Salmon",
+    "California Tiger Salamander",
+    "Least Tern",
+    "Desert Slender Salamander"
+  ],
+  "Colorado": [
+    "Whooping Crane",
+    "Ocelot",
+    "Wolverine",
+    "Piping Plover",
+    "Small Whorled Pogonia"
+  ],
+  "Connecticut": [
+    "Leatherback Sea Turtle",
+    "Loggerhead Sea Turtle",
+    "Green Sea Turtle",
+    "Hawksbill Sea Turtle",
+    "Atlantic Sturgeon",
+    "Steelhead Trout",
+    "Least Tern"
+  ],
+  "Delaware": [
+    "Whooping Crane",
+    "Green Sea Turtle",
+    "Atlantic Sturgeon",
+    "Bald Eagle",
+    "Least Tern",
+    "Small Whorled Pogonia"
+  ],
+  "Florida": [
+    "California Condor",
+    "Florida Panther",
+    "Ocelot",
+    "Grizzly Bear",
+    "West Indian Manatee",
+    "Leatherback Sea Turtle",
+    "Loggerhead Sea Turtle",
+    "Green Sea Turtle",
+    "Atlantic Sturgeon",
+    "Black-capped Vireo",
+    "American Chaffseed",
+    "Prickly Apple Cactus"
+  ],
+  "Georgia": [
+    "Whooping Crane",
+    "West Indian Manatee",
+    "Leatherback Sea Turtle",
+    "Atlantic Sturgeon",
+    "Piping Plover",
+    "Bald Eagle",
+    "Red-cockaded Woodpecker",
+    "Ivory-billed Woodpecker"
+  ],
+  "Hawaii": [
+    "Leatherback Sea Turtle",
+    "Loggerhead Sea Turtle",
+    "Green Sea Turtle",
+    "Hawksbill Sea Turtle"
+  ],
+  "Idaho": [
+    "Bull Trout",
+    "Bald Eagle",
+    "Robbins Milkvetch"
+  ],
+  "Illinois": [
+    "Whooping Crane",
+    "Black-footed Ferret",
+    "Red Wolf",
+    "Ocelot",
+    "Pallid Sturgeon",
+    "Lake Sturgeon",
+    "Black-capped Vireo"
+  ],
+  "Indiana": [
+    "Whooping Crane",
+    "Piping Plover",
+    "Bald Eagle",
+    "Lake Sturgeon"
+  ],
+  "Iowa": [
+    "Piping Plover",
+    "Least Tern"
+  ],
+  "Kansas": [
+    "Black-footed Ferret",
+    "Grizzly Bear",
+    "Piping Plover",
+    "Pallid Sturgeon",
+    "Lake Sturgeon",
+    "Black-capped Vireo",
+    "Least Tern"
+  ],
+  "Kentucky": [
+    "Grizzly Bear",
+    "Piping Plover",
+    "Steelhead Trout",
+    "Pallid Sturgeon",
+    "Bald Eagle",
+    "Lake Sturgeon",
+    "Loggerhead Shrike",
+    "Red-cockaded Woodpecker",
+    "Least Tern",
+    "Tubercled Blossom Mussel",
+    "American Chaffseed",
+    "Ivory-billed Woodpecker"
+  ],
+  "Louisiana": [
+    "Whooping Crane",
+    "Red Wolf",
+    "West Indian Manatee",
+    "Loggerhead Sea Turtle",
+    "Atlantic Sturgeon",
+    "Piping Plover",
+    "Pallid Sturgeon",
+    "Red-cockaded Woodpecker",
+    "Least Tern",
+    "Louisiana Pearlshell",
+    "Eastern Prairie Fringed Orchid",
+    "American Chaffseed",
+    "Ivory-billed Woodpecker",
+    "Geocarpon"
+  ],
+  "Maine": [
+    "Leatherback Sea Turtle",
+    "Atlantic Sturgeon",
+    "Chinook Salmon",
+    "Bald Eagle"
+  ],
+  "Maryland": [
+    "Whooping Crane",
+    "Loggerhead Sea Turtle",
+    "Piping Plover",
+    "Steelhead Trout",
+    "Loggerhead Shrike",
+    "Least Tern"
+  ],
+  "Massachusetts": [
+    "Jaguar",
+    "West Indian Manatee",
+    "Red-cockaded Woodpecker",
+    "Franklinia"
+  ],
+  "Michigan": [
+    "Black-footed Ferret",
+    "Wolverine",
+    "Loggerhead Shrike",
+    "Eastern Prairie Fringed Orchid"
+  ],
+  "Minnesota": [
+    "Whooping Crane",
+    "Red Wolf",
+    "Ocelot",
+    "Lake Sturgeon",
+    "Eastern Prairie Fringed Orchid"
+  ],
+  "Mississippi": [
+    "Whooping Crane",
+    "Red Wolf",
+    "West Indian Manatee",
+    "Loggerhead Sea Turtle",
+    "Atlantic Sturgeon",
+    "Piping Plover",
+    "Pallid Sturgeon",
+    "Lake Sturgeon",
+    "Least Tern"
+  ],
+  "Missouri": [
+    "Black-footed Ferret",
+    "Red Wolf",
+    "Bald Eagle",
+    "Least Tern"
+  ],
+  "Montana": [
+    "Whooping Crane",
+    "Steelhead Trout",
+    "Pallid Sturgeon",
+    "Bald Eagle",
+    "Least Tern",
+    "Robbins Milkvetch"
+  ],
+  "Nebraska": [
+    "Whooping Crane",
+    "Black-footed Ferret",
+    "Ocelot",
+    "Grizzly Bear",
+    "Wolverine",
+    "Jaguar",
+    "Piping Plover",
+    "Pallid Sturgeon",
+    "Least Tern"
+  ],
+  "Nevada": [
+    "Black-footed Ferret",
+    "Grizzly Bear",
+    "Southwestern Willow Flycatcher",
+    "Least Tern",
+    "Robbins Milkvetch"
+  ],
+  "New Hampshire": [
+    "Atlantic Sturgeon",
+    "Chinook Salmon",
+    "Bald Eagle",
+    "Least Tern",
+    "Robbins Milkvetch",
+    "Small Whorled Pogonia",
+    "Eastern Prairie Fringed Orchid"
+  ],
+  "New Jersey": [
+    "West Indian Manatee",
+    "Leatherback Sea Turtle",
+    "Loggerhead Sea Turtle",
+    "Atlantic Sturgeon",
+    "Piping Plover",
+    "Lake Sturgeon",
+    "Loggerhead Shrike",
+    "American Chaffseed"
+  ],
+  "New Mexico": [
+    "California Condor",
+    "Whooping Crane",
+    "Black-footed Ferret",
+    "Red Wolf",
+    "Ocelot",
+    "Grizzly Bear",
+    "Jaguar",
+    "Bald Eagle",
+    "Black-capped Vireo",
+    "Least Tern",
+    "Robbins Milkvetch",
+    "Knowlton Cactus"
+  ],
+  "New York": [
+    "Whooping Crane",
+    "Leatherback Sea Turtle",
+    "Loggerhead Sea Turtle",
+    "Atlantic Sturgeon",
+    "Piping Plover",
+    "Chinook Salmon",
+    "Lake Sturgeon",
+    "Loggerhead Shrike",
+    "Tubercled Blossom Mussel",
+    "American Chaffseed",
+    "Ivory-billed Woodpecker"
+  ],
+  "North Carolina": [
+    "Whooping Crane",
+    "Red Wolf",
+    "West Indian Manatee",
+    "Leatherback Sea Turtle",
+    "Piping Plover",
+    "Lake Sturgeon",
+    "Loggerhead Shrike",
+    "Least Tern",
+    "Small Whorled Pogonia",
+    "American Chaffseed",
+    "Ivory-billed Woodpecker"
+  ],
+  "North Dakota": [
+    "Whooping Crane",
+    "Black-footed Ferret",
+    "Steelhead Trout",
+    "Pallid Sturgeon",
+    "Eastern Prairie Fringed Orchid"
+  ],
+  "Ohio": [
+    "Whooping Crane",
+    "West Indian Manatee",
+    "Piping Plover",
+    "Bald Eagle",
+    "Franklinia"
+  ],
+  "Oklahoma": [
+    "Whooping Crane",
+    "Red Wolf",
+    "Loggerhead Shrike",
+    "Red-cockaded Woodpecker",
+    "Black-capped Vireo"
+  ],
+  "Oregon": [
+    "California Condor",
+    "Whooping Crane",
+    "Grizzly Bear",
+    "Wolverine",
+    "Jaguar",
+    "Leatherback Sea Turtle",
+    "Chinook Salmon",
+    "Bald Eagle",
+    "Robbins Milkvetch"
+  ],
+  "Pennsylvania": [
+    "Red Wolf",
+    "Atlantic Sturgeon",
+    "Piping Plover",
+    "Lake Sturgeon",
+    "Least Tern"
+  ],
+  "Rhode Island": [
+    "Leatherback Sea Turtle",
+    "Loggerhead Sea Turtle",
+    "Green Sea Turtle",
+    "Atlantic Sturgeon",
+    "Piping Plover",
+    "Loggerhead Shrike",
+    "Least Tern",
+    "Small Whorled Pogonia"
+  ],
+  "South Carolina": [
+    "Whooping Crane",
+    "West Indian Manatee",
+    "Leatherback Sea Turtle",
+    "Atlantic Sturgeon",
+    "Piping Plover",
+    "Bald Eagle",
+    "Loggerhead Shrike",
+    "Red-cockaded Woodpecker",
+    "Black-capped Vireo",
+    "Least Tern",
+    "American Chaffseed",
+    "Franklinia",
+    "Ivory-billed Woodpecker"
+  ],
+  "South Dakota": [
+    "Whooping Crane",
+    "Black-footed Ferret",
+    "Piping Plover",
+    "Pallid Sturgeon",
+    "Lake Sturgeon",
+    "Least Tern"
+  ],
+  "Tennessee": [
+    "Whooping Crane",
+    "Jaguar",
+    "Pallid Sturgeon",
+    "Lake Sturgeon",
+    "Least Tern",
+    "Small Whorled Pogonia"
+  ],
+  "Texas": [
+    "California Condor",
+    "Whooping Crane",
+    "Red Wolf",
+    "Hawksbill Sea Turtle",
+    "Piping Plover",
+    "Pallid Sturgeon",
+    "Bald Eagle",
+    "California Tiger Salamander",
+    "Black-capped Vireo",
+    "Least Tern",
+    "Navasota Ladies Tresses",
+    "Ivory-billed Woodpecker"
+  ],
+  "Utah": [
+    "California Condor",
+    "Whooping Crane",
+    "Black-footed Ferret",
+    "Ocelot",
+    "Grizzly Bear",
+    "Wolverine",
+    "Bald Eagle",
+    "Least Tern",
+    "Robbins Milkvetch"
+  ],
+  "Vermont": [
+    "Whooping Crane",
+    "Piping Plover",
+    "Bald Eagle",
+    "Lake Sturgeon",
+    "Robbins Milkvetch"
+  ],
+  "Virginia": [
+    "Black-footed Ferret",
+    "West Indian Manatee",
+    "Leatherback Sea Turtle",
+    "Loggerhead Sea Turtle",
+    "Green Sea Turtle",
+    "Atlantic Sturgeon",
+    "Piping Plover",
+    "Least Tern",
+    "Tubercled Blossom Mussel",
+    "Little-leaf Heartleaf"
+  ],
+  "Washington": [
+    "California Condor",
+    "Black-footed Ferret",
+    "Red Wolf",
+    "Grizzly Bear",
+    "Leatherback Sea Turtle",
+    "Loggerhead Sea Turtle",
+    "Green Sea Turtle",
+    "Hawksbill Sea Turtle",
+    "Piping Plover",
+    "Chinook Salmon",
+    "Steelhead Trout"
+  ],
+  "West Virginia": [
+    "Piping Plover",
+    "Least Tern"
+  ],
+  "Wisconsin": [
+    "Whooping Crane",
+    "Black-footed Ferret",
+    "Lake Sturgeon",
+    "Loggerhead Shrike"
+  ],
+  "Wyoming": [
+    "California Condor",
+    "Whooping Crane",
+    "Black-footed Ferret",
+    "Pallid Sturgeon"
+  ]
+}
