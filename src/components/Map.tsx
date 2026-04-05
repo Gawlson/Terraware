@@ -2,7 +2,7 @@
 
 import { useState , useEffect} from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
-import { geoAlbersUsa, geoPath, geoCentroid } from "d3-geo";
+import { geoAlbersUsa } from "d3-geo";
 import { useRef } from "react";
 import { TClimateData, TAirQualityData, TFireEventData } from "../types";
 import { fetchFireData } from "../app/actions";
@@ -148,10 +148,10 @@ function SidePanel({ point, mode, firesinstate, Bfirestateselected ,selectedstat
      
       <div className="flex flex-col items-center w-full">
         <div className="flex flex-col gap-8 w-full max-w-[280px]">
-             {selectedstates?.map((state) => {
+             {selectedstates?.map((state, index) => {
   return (  
+    <div key={state.stateName} className="flex flex-col gap-8 w-full">
     <div 
-      key={state.stateName} 
       className="flex flex-col w-full gap-3 rounded-2xl shadow-md border-2"
       style={{ 
         backgroundColor: "#EDF5E0", 
@@ -180,6 +180,10 @@ function SidePanel({ point, mode, firesinstate, Bfirestateselected ,selectedstat
             sub="Detected during daylight"
             accent="#f59e0b"
           />
+    </div>
+    {index < selectedstates.length - 1 && (
+      <div className="h-px w-full" style={{ background: "#A7C957", opacity: 0.4 }} />
+    )}
     </div>
   );
 })}
@@ -436,7 +440,7 @@ useEffect(() => {
               {mode === 'fire' && fireStates.map((firestate) => (
                 firestate.statefires.map((fire, i) =>(
                    <Marker key={i} coordinates={[Number(fire.longitude), Number(fire.latitude)]}>
-      <circle r={3} fill="#BC4749" fillOpacity={0.6} stroke="none" />
+      <circle r={3} fill="#BC4749" fillOpacity={1} stroke="none" />
     </Marker>
 
                 ))
@@ -453,11 +457,7 @@ useEffect(() => {
               )}
             </ComposableMap>
           </div>
-          {fireStates.map(state => {
-            return (
-              <p className ="text-red-950" key = {state.stateName} >{state.stateName}</p>
-            )
-          })} 
+         
          
         </main>
 
