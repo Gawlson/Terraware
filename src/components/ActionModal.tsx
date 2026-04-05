@@ -34,7 +34,6 @@ export default function ActionModal({ isOpen, onClose, stateName = "this region"
             try {
               // Strip out any markdown code blocks the AI might have accidentally added
               const jsonString = res.replace(/```json/g, "").replace(/```/g, "").trim();
-              console.log(jsonString)
               const parsed = JSON.parse(jsonString);
               setResult(parsed);
             } catch (err) {

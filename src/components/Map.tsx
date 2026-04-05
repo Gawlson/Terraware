@@ -116,7 +116,6 @@ useEffect(() => {
   fetchFireData().then(setAllFires);
   
 }, []);
- // console.log(allFires);
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
   const [loading, setLoading] = useState(false);
@@ -167,7 +166,6 @@ useEffect(() => {
       : [{stateName: geo.properties.name, statefires : confidentFilteredFires}, ...prev]     
                  // select
   );
-  console.log("fires in state:", confidentFilteredFires.length, "of", allFires.length);
   setFiresInState(confidentFilteredFires);
  
 
@@ -252,10 +250,10 @@ useEffect(() => {
           <span className="text-2xl">🌎</span>
           <div>
             <h1 className="text-lg font-semibold leading-none" style={{ color: "#386641" }}>
-              placeholder
+              Terraware
             </h1>
             <p className="text-xs mt-0.5" style={{ color: "#6A994E" }}>
-              placeholder
+              Know your state. Know your impact.
             </p>
           </div>
           <div className="flex gap-2">
