@@ -3,6 +3,7 @@ import { TClimateData , TAirQualityData, TFireEventData } from "../types";
 import { AirQuality } from "../api/AirQuality"
 import { FireEvents } from "../api/FireEvents";
 import { DroughtData } from "../api/DroughtData";
+import { fetchYearTempRaise } from "../api/TempData";
 export async function fetchClimateData(Latitude: number, Longitude: number): Promise<TClimateData> {
   let AirQualityData_parsed: TAirQualityData = { 
     dateObserved: '', 
@@ -47,15 +48,13 @@ export async function fetchDroughtData(stateName: string) : Promise<{   avgDroug
         label: string;
         color: string;
     };}>{
-    //  avgDroughtLevel: number;
-    // severity: {
-    //     label: string;
-    //     color: string;
-    // };
+    
     return DroughtData(stateName);
 }
 
-
+export async function fetchTempData(stateName :string) : Promise<number>{
+return await fetchYearTempRaise(stateName);
+}
 
 
 
@@ -77,7 +76,8 @@ export async function generateActionPlan(data: {
   droughtLevel: number | null; //test if null
   aqi: number | null;
   fires : number;
-  animals : string[]
+  animals : string[],
+  temperatureDelta : number
 }) {
   const FormatedData = {
     state: data.state,
@@ -87,50 +87,48 @@ export async function generateActionPlan(data: {
     animals : data.animals
 
   };
-if(responseCache[data.state]){
-  console.log("cache hit")
-  return responseCache[data.state]
 
-}
 
   const { text } = await generateText({
     model: anthropic("claude-haiku-4-5-20251001"), // fast + cheap
-    prompt: `You are a helpful climate dashboard assistant. You are given a U.S. state with recent environmental data including:
+    prompt: `You are a helpful climate dashboard assistant. You are given a U.S. state and a specific location within that state, along with recent environmental data including:
 
-- Average drought severity (0–5)
-- Air Quality Index (AQI)
-- Number of active wildfires
+- Average drought severity for the state (0–5)
+- Air Quality Index (AQI) at the selected location (note that 0 means data is unavailable)
+- Number of active wildfires in the state
+- Average temperature difference from historical baseline (in °C)
 
 Your task is to generate a JSON object with three sections:
 
-1. "summary": A concise, clear paragraph describing current environmental conditions for the state, written for a general audience.
-2. "recommendations": A list of 2–4 actionable recommendations for average people living in the state, written in plain language.
-3. "endangeredSpeciesImpact": A list of 1–3 endangered species that occur in the state, and a brief description of how current drought, air quality, or fire conditions might affect them. Do not include species that are unlikely to occur in the state.
+1. "summary": A concise, clear paragraph describing current environmental conditions for the state and the selected location, written for a general audience. Include how current temperatures compare to historical averages — note whether the area is warmer or cooler than usual and by how much. If AQI is 0, say that air quality data is not available at this location.
+
+2. "recommendations": A list of 2–4 actionable recommendations for average people living in the state or at the selected location, written in plain language. Only include advice relevant to the available data. If temperatures are significantly above or below normal, include relevant guidance.
+
+3. "endangeredSpeciesImpact": A list of 1–3 endangered species that occur in the state, and a brief description of how current drought, air quality (if available), wildfire conditions, and temperature deviation from normal might affect them. Explain how unusual warmth or cold specifically stresses each species — for example, effects on breeding cycles, habitat range, food availability, or migration. Do not include species that are unlikely to occur in the state.
 
 Make the output strictly JSON with these keys only. Example:
 
 {
-  "summary": "California is experiencing moderate drought conditions, AQI is moderate, and a small number of active fires are present.",
+  "summary": "California is experiencing moderate drought conditions with temperatures running about 4°F above the historical average, AQI is moderate at the selected location, and a small number of active fires are present. The warmer-than-normal conditions are compounding stress on local ecosystems.",
   "recommendations": [
     "Use water responsibly in your household and garden.",
     "Avoid burning debris or using fire-prone equipment outdoors during dry periods.",
-    "Check local air quality reports before outdoor exercise."
+    "Check local air quality reports before outdoor exercise.",
+    "Limit strenuous outdoor activity during the hottest parts of the day, as temperatures are running above normal."
   ],
   "endangeredSpeciesImpact": [
     {
       "species": "California condor",
-      "impact": "Dry conditions reduce water availability and food sources, which may stress the population."
+      "impact": "Dry conditions reduce water availability and food sources. Temperatures running above normal are shifting thermal columns condors rely on for soaring, and may push carcass decomposition rates in ways that affect foraging patterns."
     }
   ]
 }
 
-Here is the data for the state you need to summarize:
-${JSON.stringify(FormatedData, null, 2)}
+Here is the data for the state and location you need to summarize:
+Data: ${JSON.stringify(FormatedData, null, 2)}
 
-Use the provided state, drought, AQI, and fire data to fill this template. Write recommendations for people, not agencies or scientists.
-`,
+Use the provided state, drought, AQI, fire, and temperature difference data to fill this template. If AQI or drought data is 0, treat it as unavailable and note that in your summary. Write recommendations for people, not agencies or scientists.`,
   });
-  responseCache[data.state] = text
   return text;
 }
 
