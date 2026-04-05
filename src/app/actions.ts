@@ -1,10 +1,12 @@
 'use server'
-import { TClimateData , TAirQualityData } from "../types";
+import { TClimateData , TAirQualityData, TFireEventData } from "../types";
 import { AirQuality } from "../api/AirQuality"
+import { FireEvents } from "../api/FireEvents";
 export async function fetchClimateData(Latitude:number, Longitude: number) : Promise<TClimateData> {
 const AirQualityData = await AirQuality(Latitude, Longitude);
-const AirQualityData_parsed = await parseAirQualityData(AirQualityData)
-return { airqualitydata: AirQualityData_parsed }
+const AirQualityData_parsed = await parseAirQualityData(AirQualityData);
+const FireData = await fetchFireData();
+return { airqualitydata: AirQualityData_parsed, fireeventdata : FireData }
 /*add more later */
 }
  async function parseAirQualityData(AirQualityData : any) : Promise<TAirQualityData> {
@@ -21,6 +23,12 @@ return { airqualitydata: AirQualityData_parsed }
     categoryName: AirQualityData.Category?.Name || 'Unknown'
   };
   return data;
+}
+export async function fetchFireData() : Promise<TFireEventData[]> {
+
+return await FireEvents()
+
+
 }
 
 // airnow raw data ex[

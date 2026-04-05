@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { geoAlbersUsa, geoPath, geoCentroid } from "d3-geo";
 import { useRef } from "react";
-import { TClimateData, TAirQualityData } from "../types";
+import { TClimateData, TAirQualityData, TFireEventData } from "../types";
+import { fetchFireData } from "../app/actions";
+import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
+import { point as turfpoint } from "@turf/helpers";
 // ─── Palette ──────────────────────────────────────────────────────────────────
 // darkGreen:  #386641
 // midGreen:   #6A994E
@@ -62,8 +65,11 @@ function DataCard({
 }) {
   return (
     <div
-      className="rounded-xl p-4 flex flex-col gap-1 bg-white"
-      style={{ borderLeft: `4px solid ${accent}` }}
+      className="rounded-xl flex flex-col gap-1 bg-white shadow-sm"
+      style={{ 
+        borderLeft: `4px solid ${accent}`,
+        padding: "24px 28px" 
+      }}
     >
       <p className="text-xs uppercase tracking-widest" style={{ color: "#6A994E" }}>
         {label}
@@ -81,14 +87,11 @@ function DataCard({
 }
 
 // ─── SidePanel ────────────────────────────────────────────────────────────────
-function SidePanel({ point }: { point: ClickedPoint | null }) {
-  if (!point) {
+function SidePanel({ point, mode, firesinstate, Bfirestateselected ,selectedstates }: { point: ClickedPoint | null, mode: string, firesinstate: TFireEventData[], Bfirestateselected: boolean, selectedstates : {stateName:string, statefires : TFireEventData[]}[] }) {
+  if (!point && mode === 'explore') {
     return (
       <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
-        <div
-          className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
-          style={{ background: "#A7C957" }}
-        >
+        <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#A7C957" }}>
           🌿
         </div>
         <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
@@ -98,84 +101,164 @@ function SidePanel({ point }: { point: ClickedPoint | null }) {
     );
   }
 
+  if (mode === 'fire' && !Bfirestateselected) {
+    return (
+      <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
+        <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#BC4749" }}>
+          🔥
+        </div>
+        <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
+          Select states to view real-time wildfire data.
+        </p>
+      </aside>
+    );
+  }
+
+  if (!point && mode !== 'fire') {
+    return (
+      <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
+        <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#A7C957" }}>
+          🌿
+        </div>
+        <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
+          Click a state to explore real-time climate data for that region.
+        </p>
+      </aside>
+    );
+  }
+  let totalselectedfires = 0;
+ for (let i = 0; i< selectedstates.length; i++ ){
+    totalselectedfires += selectedstates[i].statefires.length
+ }
   return (
     <aside className="w-80 flex flex-col gap-5 p-6 overflow-y-auto">
       <div>
         <h2 className="text-xl font-semibold" style={{ color: "#386641" }}>
-          {point.label}
+          {mode === 'fire' ? 'Wildfire Data' : point?.label}
         </h2>
         <p className="text-xs mt-1 font-mono" style={{ color: "#6A994E" }}>
-          {point.lat.toFixed(4)}°N · {Math.abs(point.lng).toFixed(4)}°W
+          {mode === 'fire' ? `${totalselectedfires} fires detected` : `${point?.lat.toFixed(4)}°N · ${Math.abs(point?.lng ?? 0).toFixed(4)}°W`}
         </p>
       </div>
 
       <div className="h-px" style={{ background: "#A7C957", opacity: 0.4 }} />
 
-      {point.loading && (
-        <div className="flex items-center gap-2" style={{ color: "#6A994E" }}>
-          <div className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
-          <span className="text-sm">Fetching data…</span>
-        </div>
-      )}
-
-      {point.error && (
-        <p
-          className="text-sm rounded-lg p-3"
-          style={{ background: "#fef2f2", color: "#BC4749" }}
-        >
-          {point.error}
-        </p>
-      )}
-
-      {point.data && !point.loading && (
-        <div className="flex flex-col gap-3">
+      {mode === 'fire' ? (
+     
+     
+      <div className="flex flex-col items-center w-full">
+        <div className="flex flex-col gap-8 w-full max-w-[280px]">
+             {selectedstates?.map((state) => {
+  return (  
+    <div 
+      key={state.stateName} 
+      className="flex flex-col w-full gap-3 rounded-2xl shadow-md border-2"
+      style={{ 
+        backgroundColor: "#EDF5E0", 
+        borderColor: "#A7C957",
+        padding: "16px 24px" 
+      }}
+    >   
+          <h3 className="text-sm font-bold uppercase tracking-wider px-1" style={{ color: "#386641" }}>
+            {state.stateName}
+          </h3>
           <DataCard
-            label="Air Quality Index"
-            value={point.data.airqualitydata?.aqi ?? "—"}
-            sub={`${aqiLabel(point.data.airqualitydata?.aqi)} ${point.data.airqualitydata?.dateObserved
-                ? `(Observed: ${point.data.airqualitydata.dateObserved.trim()})`
-                : "Sorry! No data available"
-              }`}
-            accent={aqiColor(point.data.airqualitydata?.aqi)}
+            label="Total Active Fires"
+            value={state.statefires.length}
+            sub="Detected in last 24hrs"
+            accent="#BC4749"
           />
-          {/* TODO: add more cards as you wire APIs */}
-          {/* <DataCard label="Drought Level" value={} sub={} accent="#f59e0b" /> */}
-          {/* <DataCard label="Active Fires" value={} sub={} accent="#BC4749" /> */}
+          <DataCard
+            label="High Confidence"
+            value={state.statefires.filter(f => f.confidence === "h").length}
+            sub="High confidence detections"
+            accent="#BC4749"
+          />
+          <DataCard
+            label="Daytime Fires"
+            value={state.statefires.filter(f => f.daynight === "D").length}
+            sub="Detected during daylight"
+            accent="#f59e0b"
+          />
+    </div>
+  );
+})}
         </div>
-      )}
+      </div>
 
-      {point.data && !point.loading && (
+      ) : (
         <>
-          <div className="h-px" style={{ background: "#A7C957", opacity: 0.4 }} />
-          <div
-            className="rounded-xl p-4 text-sm leading-relaxed"
-            style={{ background: "#EDF5E0", color: "#386641" }}
-          >
-            <p className="font-medium mb-1">What you can do</p>
-            <p className="text-xs" style={{ color: "#6A994E" }}>
-              {/* TODO: wire AI summary here */}
-              AI-generated local action suggestions will appear here.
+          {point?.loading && (
+            <div className="flex items-center gap-2" style={{ color: "#6A994E" }}>
+              <div className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+              <span className="text-sm">Fetching data…</span>
+            </div>
+          )}
+
+          {point?.error && (
+            <p className="text-sm rounded-lg p-3" style={{ background: "#fef2f2", color: "#BC4749" }}>
+              {point.error}
             </p>
-          </div>
+          )}
+
+          {point?.data && !point.loading && (
+            <div className="flex flex-col gap-3">
+              <DataCard
+                label="Air Quality Index"
+                value={point.data.airqualitydata?.aqi ?? "—"}
+                sub={`${aqiLabel(point.data.airqualitydata?.aqi)} ${point.data.airqualitydata?.dateObserved
+                  ? `(Observed: ${point.data.airqualitydata.dateObserved.trim()})`
+                  : "Sorry! No data available"
+                }`}
+                accent={aqiColor(point.data.airqualitydata?.aqi)}
+              />
+            </div>
+          )}
         </>
       )}
+
+      <div className="h-px" style={{ background: "#A7C957", opacity: 0.4 }} />
+      <div className="rounded-xl p-4 text-sm leading-relaxed" style={{ background: "#EDF5E0", color: "#386641" }}>
+        <p className="font-medium mb-1">What you can do</p>
+        <p className="text-xs" style={{ color: "#6A994E" }}>
+          AI-generated local action suggestions will appear here.
+        </p>
+      </div>
     </aside>
   );
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 type ClimateProps = {
-  fetchdata: (latitudenum: number, longitudenum: number) => Promise<TClimateData>
+  fetchdata: (latitudenum: number, longitudenum: number) => Promise<TClimateData>,
+  
 }
 export default function ClimateMap({ fetchdata }: ClimateProps) {
+  // Stores the clicked location, fetched AQI data payload, and loading/error states for Explore mode
   const [point, setPoint] = useState<ClickedPoint | null>(null);
+  // Controls whether the single red dot (explore mode marker) is rendered on the map
   const [showPoint, setShowPoint] = useState(true)
+  // Tracks multi-selected states in Fire mode, storing each state's name and its associated high-confidence fire data for the Side Panel
+  const [fireStates, setFireStates] =  useState<{stateName :string, statefires :TFireEventData[]}[]>([]);
+  // A visual toggle to keep Fire mode states highlighted/filled when they are selected
+  const [displayFire, setDisplayFire] = useState(false);
+  //active mode 
+  const [mode, setMode] = useState('explore')
+  // all wildfire occurrences fetched from the API globally on initial load
+  const [allFires, setAllFires] = useState<TFireEventData[]>([]);
+  // Holds the calculated subset of fire events that geographically intersect with the selected states (used to plot individual fire dots)
+  const[firesInState, setFiresInState] = useState<TFireEventData[]>([])
+
+useEffect(() => {
+  fetchFireData().then(setAllFires);
+}, []);
+  console.log(allFires);
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState('explore')
-  const [fireStates, setFireStates] =  useState<string[]>([]);
-  const [displayFire, setDisplayFire] = useState(false);
+
+ 
+  
   const handleSetMode =(m :any) =>{
     setMode(m);
     if(m === "explore"){
@@ -190,12 +273,28 @@ export default function ClimateMap({ fetchdata }: ClimateProps) {
   async function handleStateClick(geo: any, e: React.MouseEvent) {
 
     if (mode === "fire") {
-  setFireStates((prev) =>
-    prev.includes(geo.properties.name)
-      ? prev.filter((s) => s !== geo.properties.name) // deselect
-      : [...prev, geo.properties.name]     
+
+  const filteredFires = allFires.filter((fire)=>(
+    booleanPointInPolygon(
+    turfpoint([Number(fire.longitude), Number(fire.latitude)]),
+    geo
+  )
+ 
+  
+)
+
+  )
+   const confidentFilteredFires = filteredFires.filter(f => f.confidence === "h" || f.confidence === "n")
+    setFireStates((prev) =>
+    prev.some((s) => s.stateName === geo.properties.name)
+      ? prev.filter((s) => s.stateName !== geo.properties.name) // deselect
+      : [{stateName: geo.properties.name, statefires : confidentFilteredFires}, ...prev]     
                  // select
   );
+  console.log("fires in state:", confidentFilteredFires.length, "of", allFires.length);
+  setFiresInState(filteredFires);
+ 
+
   
 } else {
   // your existing explore logic
@@ -272,7 +371,7 @@ export default function ClimateMap({ fetchdata }: ClimateProps) {
         padding : "6px",
       }}
     >
-      {m === "explore" ? "🌿 Explore" : "🔥 Fire Mode"}
+      {m === "explore" ? "Explore" : "View Wildfires"}
     </button>
   ))}
 </div>
@@ -307,7 +406,7 @@ export default function ClimateMap({ fetchdata }: ClimateProps) {
                 {({ geographies }) =>
                   geographies.map((geo) => {
                     const isSelected = point?.label === geo.properties.name;
-                    const isFireState = fireStates.includes(geo.properties.name)
+                    const isFireState = fireStates.some(s => s.stateName === geo.properties.name);
                     return (
                       <Geography
                         key={geo.rsmKey}
@@ -334,6 +433,18 @@ export default function ClimateMap({ fetchdata }: ClimateProps) {
                   })
                 }
               </Geographies>
+              {mode === 'fire' && fireStates.map((firestate) => (
+                firestate.statefires.map((fire, i) =>(
+                   <Marker key={i} coordinates={[Number(fire.longitude), Number(fire.latitude)]}>
+      <circle r={3} fill="#BC4749" fillOpacity={0.6} stroke="none" />
+    </Marker>
+
+                ))
+
+   
+
+
+  ))}
               {point && showPoint && projection([point.lng, point.lat]) && (
 
                 <Marker coordinates={[point.lng, point.lat]}>
@@ -344,15 +455,15 @@ export default function ClimateMap({ fetchdata }: ClimateProps) {
           </div>
           {fireStates.map(state => {
             return (
-              <p className ="text-red-950" key = {state} >{state}</p>
+              <p className ="text-red-950" key = {state.stateName} >{state.stateName}</p>
             )
           })} 
-          <p className = "text-red-500">hello world</p>
+         
         </main>
 
         <div className="w-px" style={{ background: "#A7C957", opacity: 0.5 }} />
               
-        <SidePanel point={point} />
+        <SidePanel point={point} mode = {mode} firesinstate = {firesInState} Bfirestateselected = {fireStates.length>0} selectedstates = {fireStates} />
       </div>
     </div>
   );
