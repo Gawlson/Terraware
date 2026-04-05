@@ -12,7 +12,8 @@ interface ActionModalProps {
     droughtLevel: number | null,
     aqi: number,
     fires: number,
-    animals : string[]
+    animals : string[],
+    temperatureDelta : number
   } | null
 }
 
@@ -81,7 +82,7 @@ export default function ActionModal({ isOpen, onClose, stateName = "this region"
           {/* AI Summary Section */}
           <section>
             <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
-              <span>📊</span> Climate & Wildlife Summary
+              <span>📊</span> Climate Summary
             </h3>
             <div className="bg-white/60 rounded-xl text-sm leading-relaxed border-l-4" style={{ color: "#386641", borderColor: "#386641", padding: "1.25rem 1.5rem" }}>
               {isPending ? (

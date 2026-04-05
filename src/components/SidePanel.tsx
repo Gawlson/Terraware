@@ -36,13 +36,22 @@ function aqiLabel(aqi?: number): string {
     if (aqi <= 200) return "Unhealthy";
     return "Hazardous";
 }
-export default function SidePanel({ setDisplayAIModal, point, mode, firesinstate, Bfirestateselected, selectedstates, speciesdata, droughtdata }:
+
+function tempColor(delta: number): string {
+    const abs = Math.abs(delta);
+    if (abs < 0.5) return "#6A994E"; // green
+    if (abs < 1.5) return "#f59e0b"; // orange/yellow
+    return "#BC4749"; // red
+}
+
+export default function SidePanel({ setDisplayAIModal, point, mode, firesinstate, Bfirestateselected, selectedstates, speciesdata, droughtdata, tempDelta }:
     {
         setDisplayAIModal: (displayModal: boolean) => (void), point: ClickedPoint | null, mode: string,
         firesinstate: TFireEventData[], Bfirestateselected: boolean,
         selectedstates: { stateName: string, statefires: TFireEventData[] }[],
         speciesdata: any[],
-        droughtdata?: { avgDroughtLevel: number | null, severity: { label: string, color: string } } | null
+        droughtdata?: { avgDroughtLevel: number | null, severity: { label: string, color: string } } | null,
+        tempDelta?: number | void
     }) {
     if (!point && mode === 'explore') {
         return (
@@ -238,9 +247,21 @@ export default function SidePanel({ setDisplayAIModal, point, mode, firesinstate
                                             </span>
                                         </>
                                     }
-                                    sub="US Drought Monitor (recent average)"
+                                    sub="US Drought Monitor (average of the past 3 months)"
                                     accent={droughtdata?.severity?.color ?? "#A7C957"}
                                 />
+                                {tempDelta !== undefined && (
+                                    <DataCard
+                                        label="Temperature change Mar–Apr"
+                                        value={
+                                            <>
+                                                {tempDelta > 0 ? "+" : ""}{tempDelta.toFixed(2)}°C
+                                            </>
+                                        }
+                                        sub="Difference from last year"
+                                        accent={tempColor(tempDelta)}
+                                    />
+                                )}
                             </div>
                         )}
                     </>

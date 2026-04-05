@@ -5,7 +5,7 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 import { geoAlbersUsa } from "d3-geo";
 import { useRef } from "react";
 import { TClimateData, TAirQualityData, TFireEventData } from "../types";
-import { fetchDroughtData, fetchFireData } from "../app/actions";
+import { fetchDroughtData, fetchFireData, fetchTempData } from "../app/actions";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { point as turfpoint } from "@turf/helpers";
 import SidePanel from "./SidePanel";
@@ -62,6 +62,7 @@ export default function ClimateMap({ fetchdata }: ClimateProps) {
   const[firesInState, setFiresInState] = useState<TFireEventData[]>([])
 const [speciesData, setSpeciesData] = useState<any[]>([])
 const [displayAnimalData, setDisplayAnimalData] = useState(false)
+const [tempuratureData, setTempuratureData] = useState<number | void>()
 const [stateDroughtData, setStateDroughtData] = useState<{
   avgDroughtLevel: number;
   severity: {
@@ -130,7 +131,7 @@ useEffect(() => {
                  // select
   );
   console.log("fires in state:", confidentFilteredFires.length, "of", allFires.length);
-  setFiresInState(filteredFires);
+  setFiresInState(confidentFilteredFires);
  
 
   
@@ -162,30 +163,41 @@ useEffect(() => {
 
     // 1. First, set loading to true and data to null so the UI updates to show a spinner immediately
     setPoint({ label: name, lat: realLat, lng: realLng, data: null, loading: true, error: null });
-    setSpeciesData([]) // clear previous species to trigger the loading spinner
-    setStateDroughtData(null) // clear previous drought data while the new state loads
+    setSpeciesData([]); // clear previous species to trigger the loading spinner
+    setStateDroughtData(null); // clear previous drought data while the new state loads
 
-    try {
-      // 2. Call the passed-in "fetchdata" function with the coordinates and await the result
-      const data = await fetchdata(realLat, realLng);
-      setPoint((prev) => prev && { ...prev, data, loading: false });
-    } catch (e: any) {
-      setPoint((prev) => prev && { ...prev, loading: false, error: e.message });
+    // 2. Fetch all required climate and animal data concurrently
+    const [climateResponse, speciesResponse, droughtResponse, tempResponse] = await Promise.all([
+      fetchdata(realLat, realLng).catch(e => {
+        setPoint((prev) => prev && { ...prev, loading: false, error: e.message });
+        return null;
+      }),
+      getEndangeredSpecies(name).catch(e => {
+        console.error("Species fetch failed:", e);
+        return [];
+      }),
+      fetchDroughtData(name).catch(e => {
+        console.error("Drought data fetch failed:", e);
+        return null;
+      }),
+      fetchTempData(name).catch(e => {
+                console.error("temp data fetch failed:", e);
+
+      })
+    ]);
+
+    // 3. Batch assign all state variables so stateClimateData populates simultaneously
+    if (climateResponse) {
+      setPoint((prev) => prev && { ...prev, data: climateResponse, loading: false });
     }
-    const species =  await getEndangeredSpecies(name);
-    setSpeciesData(species)
-    try {
-      const droughtdata = await fetchDroughtData(name);
-      setStateDroughtData(droughtdata);
-    } catch (e) {
-      console.error("Drought data fetch failed:", e);
-      setStateDroughtData(null);
-    }
+    setSpeciesData(speciesResponse || []);
+    setStateDroughtData(droughtResponse);
+    setTempuratureData(tempResponse)
   }
   }
   const mapRef = useRef<HTMLDivElement>(null); 
   const projection = geoAlbersUsa().scale(1070).translate([400, 300]);
-  const stateClimateData = point ? { state: point.label, droughtLevel : (stateDroughtData ? stateDroughtData.avgDroughtLevel : 0) , aqi: point.data?.airqualitydata?.aqi ?? 0 , fires:  getFiresInGeo(stateGeo).length, animals : speciesData.map((s: any) => s.commonName) } : null;
+  const stateClimateData = point ? { state: point.label, droughtLevel : (stateDroughtData ? stateDroughtData.avgDroughtLevel : 0) , aqi: point.data?.airqualitydata?.aqi ?? 0 , fires:  getFiresInGeo(stateGeo).filter(f => f.confidence === "h" || f.confidence === "n").length, animals : speciesData.map((s: any) => s.commonName), temperatureDelta : (tempuratureData ? tempuratureData : 0)} : null;
  
 
   return (
@@ -310,7 +322,7 @@ useEffect(() => {
 
         <div className="w-px" style={{ background: "#A7C957", opacity: 0.5 }} />
               
-        <SidePanel setDisplayAIModal = {setDisplayAIModal} point={point} mode = {mode} firesinstate = {firesInState} Bfirestateselected = {fireStates.length>0} selectedstates = {fireStates} speciesdata = {speciesData} droughtdata={stateDroughtData} />
+        <SidePanel setDisplayAIModal = {setDisplayAIModal} point={point} mode = {mode} firesinstate = {firesInState} Bfirestateselected = {fireStates.length>0} selectedstates = {fireStates} speciesdata = {speciesData} droughtdata={stateDroughtData} tempDelta = {tempuratureData} />
       </div>
     </div>
   );
