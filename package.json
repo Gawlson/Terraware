@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.66",
-    "@clerk/nextjs": "^7.0.8",
     "@turf/boolean-point-in-polygon": "^7.3.4",
     "@turf/helpers": "^7.3.4",
     "@types/d3-geo": "^3.1.0",
