@@ -5,11 +5,13 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 import { geoAlbersUsa } from "d3-geo";
 import { useRef } from "react";
 import { TClimateData, TAirQualityData, TFireEventData } from "../types";
-import { fetchFireData } from "../app/actions";
+import { fetchDroughtData, fetchFireData } from "../app/actions";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { point as turfpoint } from "@turf/helpers";
 import SidePanel from "./SidePanel";
+import ActionModal from "./ActionModal";
 import { getEndangeredSpecies } from "../api/EndangeredSpecies";
+import { DroughtData } from "../api/DroughtData";
 // ─── Palette ──────────────────────────────────────────────────────────────────
 // darkGreen:  #386641
 // midGreen:   #6A994E
@@ -45,6 +47,7 @@ type ClimateProps = {
 export default function ClimateMap({ fetchdata }: ClimateProps) {
   // Stores the clicked location, fetched AQI data payload, and loading/error states for Explore mode
   const [point, setPoint] = useState<ClickedPoint | null>(null);
+  const [stateGeo, setStateGeo] = useState<any|null>();
   // Controls whether the single red dot (explore mode marker) is rendered on the map
   const [displayExplore, setDisplayExplore] = useState(true)
   // Tracks multi-selected states in Fire mode, storing each state's name and its associated high-confidence fire data for the Side Panel
@@ -59,8 +62,21 @@ export default function ClimateMap({ fetchdata }: ClimateProps) {
   const[firesInState, setFiresInState] = useState<TFireEventData[]>([])
 const [speciesData, setSpeciesData] = useState<any[]>([])
 const [displayAnimalData, setDisplayAnimalData] = useState(false)
+const [stateDroughtData, setStateDroughtData] = useState<{
+  avgDroughtLevel: number;
+  severity: {
+    label: string;
+    color: string;
+  };
+} | null>(null);
+
+const[displayAIModal, setDisplayAIModal] = useState(false)
+const handleOnCloseModal = () =>{
+  setDisplayAIModal(false)
+}
 useEffect(() => {
   fetchFireData().then(setAllFires);
+  
 }, []);
  // console.log(allFires);
   const [latitude, setLatitude] = useState<number>(0);
@@ -68,7 +84,20 @@ useEffect(() => {
   const [loading, setLoading] = useState(false);
 
  
+  const getFiresInGeo = (geo : any) =>{
+     const filteredFires = allFires.filter((fire)=>(
+    booleanPointInPolygon(
+    turfpoint([Number(fire.longitude), Number(fire.latitude)]),
+    geo
+  )
+ 
   
+)
+
+  )
+  return filteredFires
+    
+  }
   const handleSetMode =(m :any) =>{
     setMode(m);
     if(m === "explore"){
@@ -91,16 +120,8 @@ useEffect(() => {
 
     if (mode === "fire") {
 
-  const filteredFires = allFires.filter((fire)=>(
-    booleanPointInPolygon(
-    turfpoint([Number(fire.longitude), Number(fire.latitude)]),
-    geo
-  )
- 
-  
-)
+  const filteredFires = getFiresInGeo(geo);
 
-  )
    const confidentFilteredFires = filteredFires.filter(f => f.confidence === "h" || f.confidence === "n")
     setFireStates((prev) =>
     prev.some((s) => s.stateName === geo.properties.name)
@@ -115,7 +136,7 @@ useEffect(() => {
   
 } else {
   // your existing explore logic
-
+  setStateGeo(geo)
     const name = geo.properties.name;
 
     // To get the exact clicked coordinates regardless of screen size/stretching:
@@ -141,6 +162,8 @@ useEffect(() => {
 
     // 1. First, set loading to true and data to null so the UI updates to show a spinner immediately
     setPoint({ label: name, lat: realLat, lng: realLng, data: null, loading: true, error: null });
+    setSpeciesData([]) // clear previous species to trigger the loading spinner
+    setStateDroughtData(null) // clear previous drought data while the new state loads
 
     try {
       // 2. Call the passed-in "fetchdata" function with the coordinates and await the result
@@ -151,17 +174,26 @@ useEffect(() => {
     }
     const species =  await getEndangeredSpecies(name);
     setSpeciesData(species)
+    try {
+      const droughtdata = await fetchDroughtData(name);
+      setStateDroughtData(droughtdata);
+    } catch (e) {
+      console.error("Drought data fetch failed:", e);
+      setStateDroughtData(null);
+    }
   }
   }
-  const mapRef = useRef<HTMLDivElement>(null);
-  // We match react-simple-maps' exact internal defaults for the "geoAlbersUsa" projection:
+  const mapRef = useRef<HTMLDivElement>(null); 
   const projection = geoAlbersUsa().scale(1070).translate([400, 300]);
+  const stateClimateData = point ? { state: point.label, droughtLevel : (stateDroughtData ? stateDroughtData.avgDroughtLevel : 0) , aqi: point.data?.airqualitydata?.aqi ?? 0 , fires:  getFiresInGeo(stateGeo).length, animals : speciesData.map((s: any) => s.commonName) } : null;
+ 
 
   return (
     <div
       className="flex flex-col h-screen"
       style={{ background: "#F2E8CF", fontFamily: "'DM Sans', sans-serif" }}
     >
+      <ActionModal isOpen = {displayAIModal} onClose ={handleOnCloseModal} stateName = {point?.label} stateClimateData = {stateClimateData}></ActionModal>
       {/* Header */}
       <header
         className="flex items-center justify-between px-8 py-6 border-b"
@@ -178,7 +210,7 @@ useEffect(() => {
             </p>
           </div>
           <div className="flex gap-2">
-  {(["explore", "fire","wildlife"] as const).map((m) => (
+  {(["explore", "wildlife","fire"] as const).map((m) => (
     <button
       key={m}
       onClick={() => handleSetMode(m)}
@@ -190,7 +222,7 @@ useEffect(() => {
         padding : "6px",
       }}
     >
-      {m === "explore" ? "Explore" : m === "fire" ? "View Wildfires" : "Endangered Species"}
+      {m === "explore" ? "Explore" : m === "wildlife" ? "Endangered Species" : "View Wildfires"}
     </button>
   ))}
 </div>
@@ -278,7 +310,7 @@ useEffect(() => {
 
         <div className="w-px" style={{ background: "#A7C957", opacity: 0.5 }} />
               
-        <SidePanel point={point} mode = {mode} firesinstate = {firesInState} Bfirestateselected = {fireStates.length>0} selectedstates = {fireStates} speciesdata = {speciesData} />
+        <SidePanel setDisplayAIModal = {setDisplayAIModal} point={point} mode = {mode} firesinstate = {firesInState} Bfirestateselected = {fireStates.length>0} selectedstates = {fireStates} speciesdata = {speciesData} droughtdata={stateDroughtData} />
       </div>
     </div>
   );

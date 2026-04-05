@@ -23,7 +23,7 @@ export default function DataCard({
       <p className="text-xs uppercase tracking-widest" style={{ color: "#6A994E" }}>
         {label}
       </p>
-      <p className="text-3xl font-semibold" style={{ color: "#386641" }}>
+      <p className="text-xl font-semibold" style={{ color: "#386641" }}>
         {value}
       </p>
       {sub && (
