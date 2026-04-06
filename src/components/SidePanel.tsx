@@ -55,39 +55,45 @@ export default function SidePanel({ setDisplayAIModal, point, mode, firesinstate
     }) {
     if (!point && mode === 'explore') {
         return (
-            <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#A7C957" }}>
-                    🌿
+            <aside className="w-80 flex flex-col justify-center p-8">
+                <div className="flex flex-col gap-3" style={{ paddingLeft: "24px", paddingTop: "6px" }}>
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#A7C957" }}>
+                        🌿
+                    </div>
+                    <p className="text-sm leading-relaxed" style={{ color: "#6A994E" }}>
+                        Click a state to explore real-time climate data for that region.
+                    </p>
                 </div>
-                <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
-                    Click a state to explore real-time climate data for that region.
-                </p>
             </aside>
         );
     }
 
     if (mode === 'fire' && !Bfirestateselected) {
         return (
-            <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#BC4749" }}>
-                    🔥
+            <aside className="w-80 flex flex-col justify-center p-8">
+                <div className="flex flex-col gap-3" style={{ paddingLeft: "24px", paddingTop: "6px" }}>
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#BC4749" }}>
+                        🔥
+                    </div>
+                    <p className="text-sm leading-relaxed" style={{ color: "#6A994E" }}>
+                        Select states to view real-time wildfire data.
+                    </p>
                 </div>
-                <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
-                    Select states to view real-time wildfire data.
-                </p>
             </aside>
         );
     }
 
     if (!point && mode === 'wildlife') {
         return (
-            <aside className="w-80 flex flex-col items-center justify-center p-8 gap-3">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#917041" }}>
-                    🐾
+            <aside className="w-80 flex flex-col justify-center p-8">
+                <div className="flex flex-col gap-3" style={{ paddingLeft: "24px", paddingTop: "6px" }}>
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ background: "#917041" }}>
+                        🐾
+                    </div>
+                    <p className="text-sm leading-relaxed" style={{ color: "#6A994E" }}>
+                        Click a state to learn about the endangered species in the area.
+                    </p>
                 </div>
-                <p className="text-center text-sm leading-relaxed" style={{ color: "#6A994E" }}>
-                    Click a state to learn about the endangered species in the area.
-                </p>
             </aside>
         );
     }
@@ -103,7 +109,7 @@ export default function SidePanel({ setDisplayAIModal, point, mode, firesinstate
     return (
         <aside className="w-80 flex flex-col h-full bg-[#F2E8CF] relative">
             <div className="flex-1 flex flex-col gap-5 p-6 overflow-y-auto">
-                <div>
+                <div style={{ paddingLeft: "24px", paddingTop: "6px" }}>
                     <h2 className="text-xl font-semibold" style={{ color: "#386641" }}>
                         {mode === 'fire' ? 'Wildfire Data' : mode === 'wildlife' ? 'Wildlife' : point?.label}
                     </h2>
@@ -115,7 +121,7 @@ export default function SidePanel({ setDisplayAIModal, point, mode, firesinstate
                 <div className="h-px" style={{ background: "#A7C957", opacity: 0.4 }} />
 
                 {mode === 'fire' ? (
-                    <div className="flex flex-col items-center w-full">
+                    <div className="flex flex-col items-center w-full" style={{ paddingLeft: "4px", paddingRight: "4px" }}>
                         <div className="flex flex-col gap-8 w-full max-w-[280px]">
                             {selectedstates?.map((state, index) => {
                                 return (
@@ -160,7 +166,7 @@ export default function SidePanel({ setDisplayAIModal, point, mode, firesinstate
                     </div>
 
                 ) : mode === 'wildlife' ? (
-                    <div className="flex flex-col items-center w-full">
+                    <div className="flex flex-col items-center w-full" style={{ paddingLeft: "4px", paddingRight: "4px" }}>
                         <div className="flex flex-col gap-8 w-full max-w-[280px]">
                             <div
                                 className="flex flex-col w-full gap-3 rounded-2xl shadow-md border-2"
@@ -216,7 +222,7 @@ export default function SidePanel({ setDisplayAIModal, point, mode, firesinstate
                         )}
 
                         {point?.data && !point.loading && (
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-3" style={{ paddingLeft: "4px", paddingRight: "4px" }}>
                                 <DataCard
                                     label="Air Quality Index"
                                     value={

@@ -371,12 +371,26 @@ useEffect(() => {
             </ComposableMap>
             )}
           </div>
+          <div
+            className="absolute left-4 bottom-4 z-10 rounded-full px-3 py-1.5 text-xs flex items-center gap-2"
+            style={{
+              background: "rgba(242, 232, 207, 0.92)",
+              color: "#386641",
+              backdropFilter: "blur(2px)",
+              boxShadow: "0 1px 6px rgba(56, 102, 65, 0.12)",
+            }}
+          >
+            <span
+              className="inline-block w-2 h-2 rounded-full"
+              style={{ background: "#111111" }}
+            />
+            High population zones
+          </div>
          
          
         </main>
 
-        <div className="w-px" style={{ background: "#A7C957", opacity: 0.5 }} />
-              
+        <div className="w-px" style={{ background: "#A7C957", opacity: 0.5 }} />  
         <SidePanel setDisplayAIModal = {setDisplayAIModal} point={point} mode = {mode} firesinstate = {firesInState} Bfirestateselected = {fireStates.length>0} selectedstates = {fireStates} speciesdata = {speciesData} droughtdata={stateDroughtData} tempDelta = {tempuratureData} />
       </div>
     </div>
